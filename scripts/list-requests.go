@@ -24,7 +24,7 @@ func main(){
 	
 	//print out the titles
 	for _, elem := range elems {
-		core.Success("Title : ", elem.MustText())
+		core.Success("Title: ", elem.MustText())
 	}
 	
 }
