@@ -5,7 +5,7 @@ tasks:
     cmds:
       - echo "Task Login"
       - go clean -modcache 
-      - go run ./scripts/driver.go -v -rod="show,slow=1s,trace"
+      - go run ./scripts/driver.go -v -rod="show,slow=5s,trace"
   #  watch: 
 
   # get-aws-creds:
