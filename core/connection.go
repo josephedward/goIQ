@@ -51,6 +51,6 @@ func Login(login WebsiteLogin) (Connection, error) {
 func VisitManual(u, url string) (Connection, error){
 	browser := browser.Manual(u)
 	page :=rod.New().ControlURL(u).MustConnect().MustPage(url)
-	time.Sleep(5 * time.Second)
+	time.Sleep(time.Second * 2)
 	return Connection{Browser: browser, Page: page}, nil	
 }

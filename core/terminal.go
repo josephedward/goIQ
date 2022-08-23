@@ -218,12 +218,13 @@ func PrintIfErr(err error) {
 }
 
 func Success(message ...interface{}) {
+	fmt.Print(Green + message[0].(string) + Reset + " ")
 	for _, msg := range message {
-		s, ok := msg.(string) // the "ok" boolean will flag success.
-		if ok {
-			fmt.Println(Green + string(s) + Reset)
-		} else {
-			fmt.Println(msg)
+		//if msg is the first, don't print a newline
+		if msg == message[0] {
+			continue
 		}
+	
+		fmt.Println(msg)
 	}
 }
