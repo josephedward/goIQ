@@ -4,7 +4,7 @@ import (
 	"iq-bot/core"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/input"
-	// "time"
+	"time"
 	"fmt"
 )
 
@@ -28,6 +28,7 @@ func NavIq(connect core.Connection) {
 
 func Scrape(connect core.Connection) rod.Elements {
 	connect.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
+	time.Sleep(5 * time.Second)
 	elems := connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__title']")
 	fmt.Println(elems[0].MustText())
 	return elems
