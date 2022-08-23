@@ -3,9 +3,21 @@ version: "3"
 tasks:
   login:
     cmds:
-      - echo "Task Login"
+      - echo "***Login***"
       - go clean -modcache 
-      - go run ./scripts/driver.go -v -rod="show,slow=5s,trace"
+      - go run ./scripts/login.go -v -rod="show, trace"
+  manual-start:
+    cmds:
+      - echo "***Manual-Start***"
+      - go clean -modcache 
+      - "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222
+  visit-manual:
+    cmds:
+      - echo "***Visit-Manual***"
+      - go clean -modcache 
+      - go run ./scripts/list-requests.go -v -rod="show,trace" {{.CLI_ARGS}}
+
+
   #  watch: 
 
   # get-aws-creds:
