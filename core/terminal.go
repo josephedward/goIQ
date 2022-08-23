@@ -221,7 +221,7 @@ func Success(message ...interface{}) {
 	for _, msg := range message {
 		s, ok := msg.(string) // the "ok" boolean will flag success.
 		if ok {
-			fmt.Print(Green + string(s) + Reset)
+			fmt.Println(Green + string(s) + Reset)
 		} else {
 			fmt.Println(msg)
 		}
