@@ -1,49 +1,14 @@
 version: "3"
 
 tasks:
-  login:
-    cmds:
-      - echo "***Login***"
-      - go clean -modcache 
-      - go run ./scripts/login.go -v -rod="show, trace"
-  manual-start:
+  start:
     cmds:
       - echo "***Manual-Start***"
+      - echo "starting" && "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222
+      # remember to copy this value to pass it to login
+  login:
+    cmds: 
+      - echo "***Login***"
       - go clean -modcache 
-      # - "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222
-  visit-manual:
-    cmds:
-      - echo "***Visit-Manual***"
-      - go clean -modcache 
-      - go run ./scripts/list-requests.go -v -rod="show,trace" {{.CLI_ARGS}}
-
-
-  #  watch: 
-
-  # get-aws-creds:
-  #   cmds:
-  #     - echo "Task - testing provider"
-  #     - go clean -modcache
-  #     - go test ./test/provider_test.go -v
-  # debug:
-  #   cmds:
-  #     - echo "Task - testing provider with visible browser and added logging"
-  #     - go clean -modcache
-  #     - go test ./test/provider_test.go -v -rod="show,slow=1s,trace"
-  # run-cli:
-  #   cmds:
-  #     - echo "Task - running interactive CLI"
-  #     - go clean -testcache
-  #     - go run ./scripts/cli.go  -v 
-  # cli-debug:
-  #   cmds:
-  #     - echo "Task - running interactive CLI"
-  #     - go clean -testcache
-  #     - go run ./scripts/cli.go -v -rod="show,slow=1s,trace"
-  # test-all:
-  #   cmds:
-  #     - echo "Task - testing all methods"
-  #     - go clean -modcache
-  #     - cd /test
-  #     - go test -v
+      - go run ./scripts/login.go -v -rod="show,trace" {{.CLI_ARGS}}
   
