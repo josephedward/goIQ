@@ -14,7 +14,6 @@ type AwsEnv struct {
 }
 
 func LoadEnv() (login AwsEnv, err error) {
-
 	//load env variables
 	err = godotenv.Load("./.env")
 	
