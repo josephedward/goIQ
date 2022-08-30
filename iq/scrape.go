@@ -15,3 +15,8 @@ func GetTitles(connect core.Connection) rod.Elements {
 	return elems
 }
 
+func GetContent(connect core.Connection , elem *rod.Element) string{
+		elem.MustClick()
+		temp := connect.Page.MustWaitLoad().MustElement("div[class^='TextMessage__text']").MustText()
+		return temp
+}

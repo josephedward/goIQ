@@ -16,7 +16,7 @@ type AwsEnv struct {
 func LoadEnv() (login AwsEnv, err error) {
 	//load env variables
 	err = godotenv.Load("./.env")
-	
+
 	//set all needed vendor credentials
 	username := os.Getenv("USERNAME")
 	password := os.Getenv("PASSWORD")
