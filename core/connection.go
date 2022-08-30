@@ -4,7 +4,6 @@ import (
 	// "errors"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/input"
-	"iq-bot/core/browser"
 	// "time"
 )
 
@@ -35,7 +34,7 @@ func Login(connect Connection, login WebsiteLogin) {
 }
 
 func Connect(u, url string) (Connection, error) {
-	browser := browser.Manual(u)
+	browser := Manual(u)
 	page := rod.New().ControlURL(u).MustConnect().MustPage(url)
 	return Connection{Browser: browser, Page: page}, nil
 }
