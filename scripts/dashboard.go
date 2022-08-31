@@ -13,8 +13,7 @@ func main() {
 	u := os.Args[2]
 
 	//navigate to IQ
-	connect, err := core.Connect(u, "https://iq.aws.amazon.com/work/#/requests")
-	core.PrintIfErr(err)
+	connect := core.Connect(u, "https://iq.aws.amazon.com/work/#/requests")
 	core.Success("connection : ", connect)
 
 	//takes a second, I guess
@@ -27,7 +26,9 @@ func main() {
 		//get value of title and content
 		title := reflect.ValueOf(req).FieldByName("title").String()
 		content := reflect.ValueOf(req).FieldByName("content").String()
+		author := reflect.ValueOf(req).FieldByName("author").String()
 		core.Success("title : ", title)
+		core.Success("author : ", author)
 		core.Success("content : ", content)
 	}
 }
