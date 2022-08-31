@@ -20,3 +20,9 @@ func GetContent(connect core.Connection , elem *rod.Element) string{
 		temp := connect.Page.MustWaitLoad().MustElement("div[class^='TextMessage__text']").MustText()
 		return temp
 }
+
+func GetAuthor(connect core.Connection , elem *rod.Element) string{
+		elem.MustClick()
+		temp := connect.Page.MustWaitLoad().MustElement("span[class^='author']").MustText()
+		return temp
+}

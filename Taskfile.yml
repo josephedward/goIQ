@@ -4,21 +4,26 @@ tasks:
   start:
     cmds:
       - echo "***Starting Browser***"
-      - go clean -modcache 
+      - go clean -modcache
       - echo "starting" && "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222
       # remember to copy this value to pass it to login
   login:
     cmds:
       - echo "***Login to AWS***"
-      - go clean -modcache 
+      - go clean -modcache
       - go run ./scripts/login.go -v -rod="show,trace" {{.CLI_ARGS}}
   dash:
-    cmds: 
+    cmds:
       - echo "***Dashboard***"
-      - go clean -modcache 
+      - go clean -modcache
       - go run ./scripts/dashboard.go -rod="show,trace" {{.CLI_ARGS}}
   cli:
     cmds:
       - echo "***Running CLI***"
-      - go clean -modcache 
+      - go clean -modcache
       - go run ./scripts/cli.go -v -rod="show,trace" {{.CLI_ARGS}}
+  # message:
+  #   cmds:
+  #     - echo "***Sending Message***"
+  #     - go clean -modcache
+  #     - go run ./scripts/message.go -v -rod="show,trace" {{.CLI_ARGS}}
