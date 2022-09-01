@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"time"
+	"strconv"
 )
 
 func main() {
@@ -31,4 +32,6 @@ func main() {
 		core.Success("author : ", author)
 		core.Success("content : ", content)
 	}
+
+	core.Success("# of requests: ",strconv.Itoa(len(reqs)) )
 }

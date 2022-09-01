@@ -2,12 +2,16 @@ package iq
 
 import (
 	"iq-bot/core"
-	
-// 	"github.com/go-rod/rod"
-// 	// "github.com/go-rod/rod/lib/input"
-// 	// "time"
-// 	// "fmt"
+
+	"github.com/go-rod/rod"
 )
+
+// type IqProxy interface {
+// 	CreateProvider(browserString string) IqProvider
+// 	Login(connect core.Connection, login core.WebsiteLogin)
+// 	GetRequests(connect core.Connection) []IqRequest //defaults to 20 requests
+// 	GetBatchRequests(connect core.Connection, number int) []IqRequest
+// }
 
 type IqProvider struct {
 	browserString string
@@ -16,41 +20,54 @@ type IqProvider struct {
 }
 
 type IqRequest struct {
-	title string
+	element *rod.Element
+	title   string
 	content string
-	author string
+	author  string
 }
 
-func GetRequests(connect core.Connection)(reqs []IqRequest){
+func CreateProvider(browserString string) (connect IqProvider) {
+	//create a new connection
+	connect = IqProvider{}
+	connect.browserString = browserString
+	connect.Connection = core.Connect(connect.browserString, "https://iq.aws.amazon.com/work/#/requests")
+	return connect
+}
+
+func Login(connect core.Connection) {
+	//load login information into memory
+	cliEnv, err := core.LoadEnv()
+	core.PrintIfErr(err)
+	core.Success("environment : ", cliEnv)
+	core.Login(connect, core.WebsiteLogin{cliEnv.Url, cliEnv.Username, cliEnv.Password})
+	//(dont forget to manually enter 2fa)
+}
+
+func GetRequests(connect core.Connection) (reqs []IqRequest) {
 	//scrape website
-	elems:=GetTitles(connect)
+	elems := GetTitles(connect)
 
 	//get the content of each request
 	for _, elem := range elems {
 		content := GetContent(connect, elem)
 		author := GetAuthor(connect, elem)
-		reqs = append(reqs, IqRequest{title: elem.MustText(), content: content, author: author})
-		InsertMessage(connect, elem, "Hello")
+		reqs = append(reqs, IqRequest{element: elem, title: elem.MustText(), content: content, author: author})
 	}
 	return reqs
 }
 
-
-func CreateProvider(browserString string)(provider IqProvider){
-	//create a new provider
-	provider = IqProvider{}
-	provider.browserString = browserString
-	provider.Connection = core.Connect(provider.browserString, "https://iq.aws.amazon.com/work/#/requests")
-	return provider
+func GetBatchRequests(connect core.Connection, number int) (reqs []IqRequest) {
+	reqs = []IqRequest{}
+	for {
+		// do something
+		if len(reqs) < number {
+			reqs = append(reqs, GetRequests(connect)...)
+		} else if len(reqs) == number {
+			break
+		} else {
+			reqs = reqs[:number]
+			break
+		}
+	}
+	return reqs
 }
-
-
-// func (provider IqProvider) GetRequests()(reqs []IqRequest){
-// 	return GetRequests(provider.Connection)
-// }
-
-// func SendMessage(connect core.Connection , elem *rod.Element, message string) {
-// 	elem.MustClick()
-// 	connect.Page.MustWaitLoad().MustElement("textarea[id^='initialResponse']").MustInput(message)
-// 	core.Success("Message inserted")
-// }
