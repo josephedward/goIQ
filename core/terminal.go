@@ -2,9 +2,7 @@ package core
 
 import (
 	"fmt"
-	// "github.com/manifoldco/promptui"
 )
-
 
 var Reset = "\033[0m"
 var Red = "\033[31m"
@@ -23,12 +21,23 @@ func PrintIfErr(err error) {
 }
 
 func Success(message ...interface{}) {
-	fmt.Print(Green + message[0].(string) + Reset + " ")
 	for _, msg := range message {
-		//if msg is the first, don't print a newline
-		if msg == message[0] {
-			continue
+		s, ok := msg.(string) // the "ok" boolean will flag success.
+		if ok {
+			fmt.Print(Green + string(s) + Reset)
+		} else {
+			fmt.Println(msg)
 		}
-		fmt.Println(msg)
+	}
+}
+
+func Error(message ...interface{}) {
+	for _, msg := range message {
+		s, ok := msg.(string) // the "ok" boolean will flag success.
+		if ok {
+			fmt.Print(Red + string(s) + Reset)
+		} else {
+			fmt.Println(msg)
+		}
 	}
 }
