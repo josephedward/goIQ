@@ -33,8 +33,7 @@ func Login(connect Connection, login WebsiteLogin) {
 	page.MustElement("input[name='password']").MustInput(login.Password).MustType(input.Enter)
 }
 
-func Connect(u, url string) (Connection) {
-	browser := Manual(u)
-	page := rod.New().ControlURL(u).MustConnect().MustPage(url)
+func Connect(browser *rod.Browser, url string) (Connection) {
+	page := browser.MustPage(url)
 	return Connection{Browser: browser, Page: page}
 }
