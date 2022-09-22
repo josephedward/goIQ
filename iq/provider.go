@@ -2,7 +2,6 @@ package iq
 
 import (
 	"iq-bot/core"
-
 	"github.com/go-rod/rod"
 )
 
@@ -14,7 +13,7 @@ import (
 // }
 
 type IqProvider struct {
-	browserString string
+	core.AwsEnv
 	core.Connection
 	requests []IqRequest
 }
@@ -26,21 +25,12 @@ type IqRequest struct {
 	author  string
 }
 
-func CreateProvider(browserString string) (connect IqProvider) {
-	//create a new connection
-	connect = IqProvider{}
-	connect.browserString = browserString
-	connect.Connection = core.Connect(connect.browserString, "https://iq.aws.amazon.com/work/#/requests")
-	return connect
-}
+// func (p *IqProvider) ConnectIq(browserino *rod.Browser) {
+// 	p.Connection = core.Connect(browserino, "https://iq.aws.amazon.com/work/#/requests")
+// }
 
-func Login(connect core.Connection) {
-	//load login information into memory
-	cliEnv, err := core.LoadEnv()
-	core.PrintIfErr(err)
-	core.Success("environment : ", cliEnv)
+func (p *IqProvider)Login(connect core.Connection, cliEnv core.AwsEnv) {
 	core.Login(connect, core.WebsiteLogin{cliEnv.Url, cliEnv.Username, cliEnv.Password})
-	//(dont forget to manually enter 2fa)
 }
 
 func GetRequests(connect core.Connection) (reqs []IqRequest) {
