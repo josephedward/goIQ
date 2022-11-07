@@ -1,7 +1,9 @@
 package iq
 
 import (
+	"fmt"
 	"iq-bot/core"
+	"iq-bot/cli"
 	"github.com/go-rod/rod"
 )
 
@@ -15,7 +17,7 @@ import (
 type IqProvider struct {
 	core.AwsEnv
 	core.Connection
-	requests []IqRequest
+	Requests []IqRequest
 }
 
 type IqRequest struct {
@@ -25,17 +27,11 @@ type IqRequest struct {
 	author  string
 }
 
-// func (p *IqProvider) ConnectIq(browserino *rod.Browser) {
-// 	p.Connection = core.Connect(browserino, "https://iq.aws.amazon.com/work/#/requests")
-// }
-
-func (p *IqProvider)Login(connect core.Connection, cliEnv core.AwsEnv) {
-	core.Login(connect, core.WebsiteLogin{cliEnv.Url, cliEnv.Username, cliEnv.Password})
-}
 
 func GetRequests(connect core.Connection) (reqs []IqRequest) {
 	//scrape website
 	elems := GetTitles(connect)
+	fmt.Println("elems : ", elems)
 
 	//get the content of each request
 	for _, elem := range elems {
@@ -60,4 +56,40 @@ func GetBatchRequests(connect core.Connection, number int) (reqs []IqRequest) {
 		}
 	}
 	return reqs
+}
+
+func GetTitles(connect core.Connection) rod.Elements {
+	fmt.Println("connect : ", connect)
+	elems := connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem']")
+	fmt.Println("elems : ", elems)
+	return elems
+}
+
+func GetContent(connect core.Connection, elem *rod.Element) string {
+	elem.MustClick()
+	temp := connect.Page.MustWaitLoad().MustElement("div[class^='TextMessage__text']").MustText()
+	return temp
+}
+
+func GetAuthor(connect core.Connection, elem *rod.Element) string {
+	elem.MustClick()
+	temp := connect.Page.MustWaitLoad().MustElement("span[class^='author']").MustText()
+	return temp
+}
+
+func InsertMessage(connect core.Connection, elem *rod.Element, message string) {
+	elem.MustClick()
+	textarea := connect.Page.MustWaitLoad().MustElement("textarea[id^='initialResponse']")
+	textarea.MustSelectAllText().MustInput("")
+	textarea.MustInput(message)
+	cli.Success("Message inserted")
+}
+
+func DraftIntro() {}
+
+func AnswerAllRequests(connect core.Connection, reqs []IqRequest) {
+	// for _, req := range reqs {
+
+	// 	// AnswerRequest(connect, req)
+	// }
 }

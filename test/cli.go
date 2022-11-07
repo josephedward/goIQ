@@ -3,13 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"iq-bot/core"
 	"iq-bot/iq"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/manifoldco/promptui"
 )
 
 type promptOptions struct {
@@ -110,7 +111,7 @@ func LoginToAws(p iq.IqProvider) (err error) {
 	//load login information into memory
 	p.AwsEnv, err = core.LoadEnv()
 	core.PrintIfErr(err)
-	core.Success("environment : ", p.AwsEnv)
+	cli.Success("environment : ", p.AwsEnv)
 
 	browserino := core.CustomLaunch()
 	p.Connection = core.Connect(browserino, p.AwsEnv.Url)
@@ -153,7 +154,7 @@ func GetBatchRequestNumber(connect core.Connection) (reqs []iq.IqRequest) {
 
 func PrintRequests(reqs []iq.IqRequest) {
 	for _, req := range reqs {
-		core.Success("Request:", reflect.ValueOf(req).FieldByName("title").String())
+		cli.Success("Request:", reflect.ValueOf(req).FieldByName("title").String())
 	}
 }
 
@@ -162,7 +163,7 @@ func SendMessage(connect core.Connection, templates *promptui.SelectTemplates, s
 	// options := []iq.IqRequest{reqs...}
 	options := []promptOptions{}
 	for _, req := range reqs {
-		core.Success("Request:", reflect.ValueOf(req).FieldByName("title").String())
+		cli.Success("Request:", reflect.ValueOf(req).FieldByName("title").String())
 		// options = append(options, promptOptions{
 		// 	Label: req.title,
 		// 	Key:   int64(req.id),
@@ -197,7 +198,7 @@ func SendMessage(connect core.Connection, templates *promptui.SelectTemplates, s
 // 	}
 // }
 
-// core.Success("# of requests: ",strconv.Itoa(len(reqs)) )
+// cli.Success("# of requests: ",strconv.Itoa(len(reqs)) )
 
 // // func promptEnvFile() (ACloudEnv, error) {
 // // 	//load env variables

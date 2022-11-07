@@ -21,9 +21,9 @@ tasks:
     cmds:
       - echo "***Running CLI***"
       - go clean -modcache
-      - go run ./scripts/cli.go {{.CLI_ARGS}} -rod="show,slow=1s,,trace" {{.CLI_ARGS}}
+      - go run ./scripts/cli.go {{.CLI_ARGS}} -rod="show,trace" {{.CLI_ARGS}}
   launcher:
     cmds:
       - go clean -modcache
-      - go run ./scripts/test_launcher_lib.go -rod="show,slow=1s,,trace" {{.CLI_ARGS}}
+      - go run ./scripts/test_launcher_lib.go -rod="show,trace" {{.CLI_ARGS}}
 

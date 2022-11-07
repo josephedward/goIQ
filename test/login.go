@@ -16,12 +16,12 @@ func main() {
 	//load login information into memory
 	cliEnv, err := core.LoadEnv()
 	core.PrintIfErr(err)
-	core.Success("environment : ", cliEnv)
+	cli.Success("environment : ", cliEnv)
 
 	//connect to aws
 	connect := core.Connect(u, cliEnv.Url)
 	core.PrintIfErr(err)
-	core.Success("connection : ", connect)
+	cli.Success("connection : ", connect)
 
 	//enter login credentials
 	core.Login(connect, core.WebsiteLogin{cliEnv.Url, cliEnv.Username, cliEnv.Password})
