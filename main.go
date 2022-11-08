@@ -8,59 +8,68 @@ import (
 	"iq-bot/core"
 	"iq-bot/iq"
 	"os"
-	"reflect"
-	"strconv"
+	// "reflect"
+	// "strconv"
 	"strings"
 	"time"
-	"github.com/go-rod/rod"
+	// "github.com/go-rod/rod"
 	"github.com/manifoldco/promptui"
 	// "errors"
 )
 
 func main() {
-
 	var p iq.IqProvider
 	p, err := Bootstrap(p)
+	cli.Success("Main IqProvider : ", p)
 	cli.PrintIfErr(err)
 	exit := false
 	for !exit {
 		Execute(p)
 	}
-
 }
 
 func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 	cli.Welcome()
 
-	//cli arguments
-	browserString := os.Args[2]
-	if len(browserString) != 0 {
-		cli.Success("Browser String : ", browserString)
-		b := core.Manual(browserString)
-		cli.Success("Browser : ", b)
-		Dash(b)
-	}
-
-	
-
-	
 	//load login information into memory
 	p.AwsEnv, err = core.LoadEnv()
 	cli.Success("environment : ", p.AwsEnv)
 	cli.PrintIfErr(err)
 
-	//login to aws
-	p.Connection, err = core.Login(core.WebsiteLogin{p.AwsEnv.Url, p.AwsEnv.Username, p.AwsEnv.Password})
-	cli.Success("logged in : ", p.Connection)
-	cli.PrintIfErr(err)
-	cli.Success("...waiting on 2FA... (return to browser)")
+	//if there are arguments, do not need to boostrap
+	if len(os.Args) < 1 {
+		//login to aws
+		p.Connection, err = core.Login(core.WebsiteLogin{p.AwsEnv.Url, p.AwsEnv.Username, p.AwsEnv.Password})
+		//wait for 2fa - this is a hack for now, need to remove
+		cli.Success("p.Connection: ", p.Connection)
+		cli.PrintIfErr(err)
 
-	// iqPage := p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
-	// p.Connection.Page = iqPage;
-	// cli.Success("iqPage : ", iqPage)
+		cli.Success("...waiting on 2FA... (return to browser)")
+		time.Sleep(time.Second * 30)
+		
+		NavIq(p)
+		return p, err
+	} else {
+		cli.Success("argument : ", os.Args[2])
+		//convert string to *rod.Browser
+		browser := core.Manual(os.Args[2])
+		// cli.Success("browser : ", browser)
+		p.Connection = core.Connect(browser,"https://iq.aws.amazon.com/work/#/requests" )
+		cli.Success("p : ", p)
+		// p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
+		// connect page 
+		return p, err
+	}
 
-	return p, err
+
 }
+
+func NavIq(iq.IqProvider) (p iq.IqProvider){
+	p.Connection = core.Connect(p.Connection.Browser,"https://iq.aws.amazon.com/work/#/requests" )
+	p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
+	return p
+}
+
 
 func Execute(p iq.IqProvider) {
 	cli.Success("iq.IqProvider : ", p)
@@ -71,9 +80,19 @@ func Execute(p iq.IqProvider) {
 			Key:   0,
 		},
 		{
-			Label: "Get Requests",
+			Label: "Reauthenticate",
 			Key:   1,
 		},
+		{
+			Label: "Navigate to IQ",
+			Key:   2,
+		},
+	
+		{
+			Label: "Get Requests",
+			Key:   3,
+		},
+
 		// {
 		// 	Label: "Send Message",
 		// 	Key:   3,
@@ -121,67 +140,73 @@ func Execute(p iq.IqProvider) {
 	case 0:
 		os.Exit(0)
 	case 1:
-		cli.Success("Get Requests")
-		GetRequests(p)
+		cli.Success("Authenticate")
+		Bootstrap(p)
 		// iq.GetRequests(p.Connection)
 	case 2:
-		// 	cli.Success("Send Message")
-		// case 3:
-		// 	cli.Success("Send Bulk Message")
+		cli.Success("Navigate to IQ")
+		NavIq(p)
+	case 3:
+		cli.Success("Get Requests")
+		GetRequests(p)
 	}
 
 	Execute(p)
 }
 
-func GetRequests(p iq.IqProvider) {
-	p.Connection.Page = p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
-	//stall for page to load
-	// p.Connection.Page.MustWaitLoad()
+
+func GetRequests(p iq.IqProvider) (iq.IqProvider){
+
 	//takes a second, I guess
 	time.Sleep(time.Second * 2)
 
-	iq.GetRequests(p.Connection)
+	cli.Success("p : ", p)
 
+	
+	//get all requests
+	requests := iq.GetElements(p.Connection)
+	cli.Success("requests : ", requests)
+	p.Requests = requests
+	return p
 }
 
-func GetBrowser() (browser *rod.Browser) {
-	browserString := cli.PromptGetInput(cli.PromptContent{
-				Label: "Please enter the browser string",
-			})
-	browser = core.Manual(browserString) 
-	return browser
-}
+// func GetBrowser() (browser *rod.Browser) {
+// 	browserString := cli.PromptGetInput(cli.PromptContent{
+// 				Label: "Please enter the browser string",
+// 			})
+// 	browser = core.Manual(browserString)
+// 	return browser
+// }
 
-func Dash(u *rod.Browser){
+// func Dash(u *rod.Browser){
 
-		// fmt.Println("Arg length is %d", argLength)
-		// u := os.Args[2]
-	
-		//navigate to IQ
-		browser = core.Manual(u) 
-		connect := core.Connect(browser, "https://iq.aws.amazon.com/work/#/requests")
-		cli.Success("connection : ", connect)
-	
-		//takes a second, I guess
-		time.Sleep(time.Second * 2)
-	
-		reqs := iq.GetRequests(connect)
-	
-		for _, req := range reqs {
-			cli.Success("request : ", req)
-			//get value of title and content
-			title := reflect.ValueOf(req).FieldByName("title").String()
-			content := reflect.ValueOf(req).FieldByName("content").String()
-			author := reflect.ValueOf(req).FieldByName("author").String()
-			cli.Success("title : ", title)
-			cli.Success("author : ", author)
-			cli.Success("content : ", content)
-		}
-	
-		cli.Success("# of requests: ", strconv.Itoa(len(reqs)))
-	
-	
-}
+// 		// fmt.Println("Arg length is %d", argLength)
+// 		// u := os.Args[2]
+
+// 		//navigate to IQ
+// 		browser = core.Manual(u)
+// 		connect := core.Connect(browser, "https://iq.aws.amazon.com/work/#/requests")
+// 		cli.Success("connection : ", connect)
+
+// 		//takes a second, I guess
+// 		time.Sleep(time.Second * 2)
+
+// 		reqs := iq.GetRequests(connect)
+
+// 		for _, req := range reqs {
+// 			cli.Success("request : ", req)
+// 			//get value of title and content
+// 			title := reflect.ValueOf(req).FieldByName("title").String()
+// 			content := reflect.ValueOf(req).FieldByName("content").String()
+// 			author := reflect.ValueOf(req).FieldByName("author").String()
+// 			cli.Success("title : ", title)
+// 			cli.Success("author : ", author)
+// 			cli.Success("content : ", content)
+// 		}
+
+// 		cli.Success("# of requests: ", strconv.Itoa(len(reqs)))
+
+// }
 
 // go core.Manager()
 // time.Sleep(1 * time.Second)
