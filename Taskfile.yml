@@ -1,0 +1,33 @@
+version: "3"
+
+tasks:
+  start:
+    cmds:
+      - echo "***Starting Browser***"
+      - go clean -modcache
+      # remember to copy this value to pass it to login      
+      - echo "starting" && "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222
+  main:
+    cmds:
+      - echo "***Starting Bot***"
+      -  go run . -rod="show,trace" {{.CLI_ARGS}}
+
+
+#  ws://127.0.0.1:9222/devtools/browser/e0f628ac-bd09-452e-bdcc-673bd01669d6
+  login:
+    cmds:
+      - echo "***Login to AWS***"
+      - go clean -modcache
+      - go run ./test/login.go -v -rod="show,trace" {{.CLI_ARGS}}
+      
+  dash:
+    cmds:
+      - echo "***Dashboard***"
+      - go clean -modcache
+      - go run ./test/dashboard.go -rod="show,trace" {{.CLI_ARGS}}
+  
+  launcher-test:
+    cmds:
+      - go clean -modcache
+      - go run ./test/test_launcher_lib.go -rod="show,trace" {{.CLI_ARGS}}
+

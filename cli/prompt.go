@@ -4,13 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/manifoldco/promptui"
-	// "iq-bot/core"
 	"os"
 )
 
 type PromptContent struct {
 	Label string
-	// Items    []string
 	errorMsg string
 }
 
@@ -18,58 +16,6 @@ type PromptOptions struct {
 	Label string
 	Key   int64
 }
-
-// func GetEnv(env_path string) (core.ACloudEnv, error) {
-// 	env, err := core.LoadEnvPath(env_path)
-// 	if err != nil {
-// 		fmt.Println("Could not load .env file - Err: ", err)
-// 		// PromptEnvFile()
-// 		env = core.Env()
-// 	}
-// 	return env, nil
-// }
-
-// func PromptEnvFile() (core.ACloudEnv, error) {
-// 	//load env variables
-// 	env_path := PromptGetInput(PromptContent{
-// 		Label: "Please enter the path to the .env file from this directory",
-// 	})
-// 	env, err := GetEnv(env_path)
-// 	return env, err
-// }
-
-// func PromptManual() (core.ACloudEnv, error) {
-// 	tempEnv := core.ACloudEnv{}
-// 	// get env vars via cli prompt
-// 	tempEnv.Url = PromptGetInput(PromptContent{
-// 		Label: "Name of web property URL you would like to login to",
-// 	})
-// 	// if tempEnv.Url == "" {
-// 	// 	tempEnv.Url = "https://learn.acloud.guru/cloud-playground/cloud-sandboxes"
-// 	// }
-// 	tempEnv.Username = PromptGetInput(PromptContent{
-// 		Label: "What is your username",
-// 	})
-// 	tempEnv.Password = PromptGetInput(PromptContent{
-// 		Label: "What is your password",
-// 	})
-// 	// get aws_path via cli prompt
-// 	tempEnv.Aws_path = PromptGetInput(PromptContent{
-// 		Label: "Where would you like your sandbox credentials appended",
-// 	})
-// 	// get download path via cli prompt
-// 	tempEnv.Download_key = PromptGetInput(PromptContent{
-// 		Label: "What would you like the name of your sandbox credentials file to be",
-// 	})
-// 	//if all env vars are set, return the env
-// 	if tempEnv.Url != "" && tempEnv.Username != "" && tempEnv.Password != "" && tempEnv.Aws_path != "" && tempEnv.Download_key != "" {
-// 		return tempEnv, nil
-// 	} else {
-// 		fmt.Println("Please fill out all fields")
-// 		PromptManual()
-// 	}
-// 	return tempEnv, nil
-// }
 
 func PromptGetInput(pc PromptContent) string {
 	validate := func(input string) error {

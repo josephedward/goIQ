@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
 	"github.com/manifoldco/promptui"
 )
 

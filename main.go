@@ -8,23 +8,17 @@ import (
 	"iq-bot/core"
 	"iq-bot/iq"
 	"os"
+	"reflect"
+	"strconv"
 	"strings"
-
+	"time"
+	"github.com/go-rod/rod"
 	"github.com/manifoldco/promptui"
+	// "errors"
 )
 
-type promptOptions struct {
-	Label string
-	Key   int64
-}
-
-type promptContent struct {
-	Label string
-	// Items    []string
-	errorMsg string
-}
-
 func main() {
+
 	var p iq.IqProvider
 	p, err := Bootstrap(p)
 	cli.PrintIfErr(err)
@@ -33,12 +27,23 @@ func main() {
 		Execute(p)
 	}
 
-
 }
 
 func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 	cli.Welcome()
 
+	//cli arguments
+	browserString := os.Args[2]
+	if len(browserString) != 0 {
+		cli.Success("Browser String : ", browserString)
+		b := core.Manual(browserString)
+		cli.Success("Browser : ", b)
+		Dash(b)
+	}
+
+	
+
+	
 	//load login information into memory
 	p.AwsEnv, err = core.LoadEnv()
 	cli.Success("environment : ", p.AwsEnv)
@@ -50,7 +55,6 @@ func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 	cli.PrintIfErr(err)
 	cli.Success("...waiting on 2FA... (return to browser)")
 
-
 	// iqPage := p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
 	// p.Connection.Page = iqPage;
 	// cli.Success("iqPage : ", iqPage)
@@ -58,11 +62,10 @@ func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 	return p, err
 }
 
-
 func Execute(p iq.IqProvider) {
 	cli.Success("iq.IqProvider : ", p)
 
-	options := []promptOptions{
+	options := []cli.PromptOptions{
 		{
 			Label: "Exit CLI",
 			Key:   0,
@@ -131,16 +134,58 @@ func Execute(p iq.IqProvider) {
 }
 
 func GetRequests(p iq.IqProvider) {
-	p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
-	// core.Connect(p.Connection.Browser, "https://iq.aws.amazon.com/work/#/requests")
+	p.Connection.Page = p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
+	//stall for page to load
+	// p.Connection.Page.MustWaitLoad()
+	//takes a second, I guess
+	time.Sleep(time.Second * 2)
+
 	iq.GetRequests(p.Connection)
 
 }
 
+func GetBrowser() (browser *rod.Browser) {
+	browserString := cli.PromptGetInput(cli.PromptContent{
+				Label: "Please enter the browser string",
+			})
+	browser = core.Manual(browserString) 
+	return browser
+}
 
-	// go core.Manager()
-	// time.Sleep(1 * time.Second)
-	// go core.Remote()
+func Dash(u *rod.Browser){
+
+		// fmt.Println("Arg length is %d", argLength)
+		// u := os.Args[2]
+	
+		//navigate to IQ
+		browser = core.Manual(u) 
+		connect := core.Connect(browser, "https://iq.aws.amazon.com/work/#/requests")
+		cli.Success("connection : ", connect)
+	
+		//takes a second, I guess
+		time.Sleep(time.Second * 2)
+	
+		reqs := iq.GetRequests(connect)
+	
+		for _, req := range reqs {
+			cli.Success("request : ", req)
+			//get value of title and content
+			title := reflect.ValueOf(req).FieldByName("title").String()
+			content := reflect.ValueOf(req).FieldByName("content").String()
+			author := reflect.ValueOf(req).FieldByName("author").String()
+			cli.Success("title : ", title)
+			cli.Success("author : ", author)
+			cli.Success("content : ", content)
+		}
+	
+		cli.Success("# of requests: ", strconv.Itoa(len(reqs)))
+	
+	
+}
+
+// go core.Manager()
+// time.Sleep(1 * time.Second)
+// go core.Remote()
 // func Login(){
 // 	cliEnv, err := core.LoadEnv()
 // 	core.PrintIfErr(err)
@@ -258,35 +303,34 @@ func GetRequests(p iq.IqProvider) {
     }
 */
 
+// go core.Manager()
+// go core.Remote()
 
-	// go core.Manager()
-	// go core.Remote()
+// _, err := exec.Command("/bin/sh", "./scripts/frame.sh").Output()
+// if err != nil {
+// 	panic(err)
+// }
+// cli.Success("Script executed successfully")
 
-	// _, err := exec.Command("/bin/sh", "./scripts/frame.sh").Output()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// cli.Success("Script executed successfully")
+// var p iq.IQProvider
+// cli.Success("getting iq provider login...")
 
-	// var p iq.IQProvider
-	// cli.Success("getting iq provider login...")
-
-	// if len(os.Args) > 1 {
-	// 	cli.Success("setting args to env...")
-	// 	env, err :=core.ArgEnv()
-	// 	cli.PrintIfErr(err)
-	// 	p.IQEnv = env
-	// 	p = bootstrap(p)
-	// 	Execute(p)
-	// } else {
-	// 	env, err := cli.GetEnv(".env")
-	// 	cli.PrintIfErr(err)
-	// 	if err != nil {
-	// 		cli.Error("Error: .env file not found")
-	// 		env = core.Env()
-	// 	}
-	// 	cli.Success("env : ", env)
-	// 	p.IQEnv = env
-	// 	p = bootstrap(p)
-	// 	Execute(p)
-	// }
+// if len(os.Args) > 1 {
+// 	cli.Success("setting args to env...")
+// 	env, err :=core.ArgEnv()
+// 	cli.PrintIfErr(err)
+// 	p.IQEnv = env
+// 	p = bootstrap(p)
+// 	Execute(p)
+// } else {
+// 	env, err := cli.GetEnv(".env")
+// 	cli.PrintIfErr(err)
+// 	if err != nil {
+// 		cli.Error("Error: .env file not found")
+// 		env = core.Env()
+// 	}
+// 	cli.Success("env : ", env)
+// 	p.IQEnv = env
+// 	p = bootstrap(p)
+// 	Execute(p)
+// }

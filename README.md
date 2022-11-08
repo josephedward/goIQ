@@ -2,6 +2,8 @@
 
 This project is to help me automate the process of interacting with AWS IQ requests.
 
+go run . -rod="show,trace" 
+
 ## Golang Scraper
 <hr>
 [Rod](https://go-rod.github.io/#/) 

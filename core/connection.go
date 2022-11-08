@@ -35,8 +35,6 @@ func SimpleLogin(connect Connection, login WebsiteLogin) {
 }
 
 func Connect(browser *rod.Browser, url string) (Connection) {
-	// fmt.Println("browser : ", browser)
-	// fmt.Println("url : ", url)
 	page := browser.MustPage(url)
 	return Connection{Browser: browser, Page: page}
 }

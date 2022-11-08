@@ -15,6 +15,7 @@ import (
 // }
 
 type IqProvider struct {
+	browserString string
 	core.AwsEnv
 	core.Connection
 	Requests []IqRequest
@@ -60,7 +61,7 @@ func GetBatchRequests(connect core.Connection, number int) (reqs []IqRequest) {
 
 func GetTitles(connect core.Connection) rod.Elements {
 	fmt.Println("connect : ", connect)
-	elems := connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem']")
+	elems := connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__title']")
 	fmt.Println("elems : ", elems)
 	return elems
 }
