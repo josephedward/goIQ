@@ -8,19 +8,23 @@ import (
 	"iq-bot/core"
 	"iq-bot/iq"
 	"os"
+
 	// "reflect"
 	// "strconv"
 	"strings"
 	"time"
+
 	// "github.com/go-rod/rod"
 	"github.com/manifoldco/promptui"
 	// "errors"
+	// "reflect"
 )
 
 func main() {
 	var p iq.IqProvider
+	cli.Success("p.LoggedIn : ", p.LoggedIn)
 	p, err := Bootstrap(p)
-	cli.Success("Main IqProvider : ", p)
+	cli.Success("IqProvider after Bootstrap: ", p)
 	cli.PrintIfErr(err)
 	exit := false
 	for !exit {
@@ -36,40 +40,67 @@ func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 	cli.Success("environment : ", p.AwsEnv)
 	cli.PrintIfErr(err)
 
-	//if there are arguments, do not need to boostrap
-	if len(os.Args) < 1 {
-		//login to aws
-		p.Connection, err = core.Login(core.WebsiteLogin{p.AwsEnv.Url, p.AwsEnv.Username, p.AwsEnv.Password})
-		//wait for 2fa - this is a hack for now, need to remove
-		cli.Success("p.Connection: ", p.Connection)
-		cli.PrintIfErr(err)
-
-		cli.Success("...waiting on 2FA... (return to browser)")
-		time.Sleep(time.Second * 30)
-		
-		NavIq(p)
-		return p, err
-	} else {
-		cli.Success("argument : ", os.Args[2])
-		//convert string to *rod.Browser
+	cli.Success("len(os.Args) : ", len(os.Args))
+	if len(os.Args) > 2 {
 		browser := core.Manual(os.Args[2])
-		// cli.Success("browser : ", browser)
-		p.Connection = core.Connect(browser,"https://iq.aws.amazon.com/work/#/requests" )
-		cli.Success("p : ", p)
-		// p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
-		// connect page 
+		p.Connection.Browser = browser
+		cli.Success("p.Connection : ", p.Connection)
+		p.LoggedIn = true
+		p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
+		// p = NavIq(p)
+
 		return p, err
 	}
 
+	if !p.LoggedIn {
+		p, err = Authenticate(p)
+		cli.PrintIfErr(err)
+		p = NavIq(p)
+
+
+	}
+	cli.Success("p.LoggedIn : ", p.LoggedIn)
+
+	return p, err
+}
+
+// func CreateBrowser() (browser *rod.Browser) {
+// 	browser = rod.New().MustConnect()
+// 	// if path, exists := launcher.LookPath(); exists {
+// 	// 	u := launcher.New().Bin(path).MustLaunch()
+// 	// 	rod.New().ControlURL(u).MustConnect()
+// 	// }
+// 	return browser
+// }
+
+func Authenticate(p iq.IqProvider) (iq.IqProvider, error) {
+
+	//declare error
+	var err error
+
+	cli.Success("p.Connection before: ", p.Connection)
+	p.Connection = core.Connect(p.Connection.Browser, p.AwsEnv.Url)
+	cli.Success("p.Connection after: ", p.Connection)
+
+	//login to aws
+	p.Connection, err = core.SimpleLogin(p.Connection, core.WebsiteLogin{p.AwsEnv.Url, p.AwsEnv.Username, p.AwsEnv.Password})
+	//wait for 2fa - this is a hack for now, need to remove
+	cli.Success("p.Connection: ", p.Connection)
+	cli.PrintIfErr(err)
+	cli.Success("...waiting on 2FA... (return to browser)")
+	//authentication boolean
+	// p.LoggedIn = true
+	p.LoggedIn = true
+	cli.Success("p.LoggedIn : ", p.LoggedIn)
+	return p, err
 
 }
 
-func NavIq(iq.IqProvider) (p iq.IqProvider){
-	p.Connection = core.Connect(p.Connection.Browser,"https://iq.aws.amazon.com/work/#/requests" )
-	p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
+func NavIq(iq.IqProvider) (p iq.IqProvider) {
+	// p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
+	p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
 	return p
 }
-
 
 func Execute(p iq.IqProvider) {
 	cli.Success("iq.IqProvider : ", p)
@@ -87,7 +118,7 @@ func Execute(p iq.IqProvider) {
 			Label: "Navigate to IQ",
 			Key:   2,
 		},
-	
+
 		{
 			Label: "Get Requests",
 			Key:   3,
@@ -141,28 +172,26 @@ func Execute(p iq.IqProvider) {
 		os.Exit(0)
 	case 1:
 		cli.Success("Authenticate")
-		Bootstrap(p)
+		p, _ = Authenticate(p)
 		// iq.GetRequests(p.Connection)
 	case 2:
 		cli.Success("Navigate to IQ")
-		NavIq(p)
+		p = NavIq(p)
 	case 3:
 		cli.Success("Get Requests")
-		GetRequests(p)
+		p = GetRequests(p)
 	}
 
 	Execute(p)
 }
 
-
-func GetRequests(p iq.IqProvider) (iq.IqProvider){
+func GetRequests(p iq.IqProvider) iq.IqProvider {
 
 	//takes a second, I guess
 	time.Sleep(time.Second * 2)
 
 	cli.Success("p : ", p)
 
-	
 	//get all requests
 	requests := iq.GetElements(p.Connection)
 	cli.Success("requests : ", requests)
@@ -213,12 +242,12 @@ func GetRequests(p iq.IqProvider) (iq.IqProvider){
 // go core.Remote()
 // func Login(){
 // 	cliEnv, err := core.LoadEnv()
-// 	core.PrintIfErr(err)
+// 	cli.PrintIfErr(err)
 // 	cli.Success("environment : ", cliEnv)
 
 // 	//connect to aws
 // 	connect := core.Connect(u, cliEnv.Url)
-// 	core.PrintIfErr(err)
+// 	cli.PrintIfErr(err)
 // 	cli.Success("connection : ", connect)
 
 // 	//enter login credentials

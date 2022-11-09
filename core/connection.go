@@ -22,9 +22,10 @@ type Connection struct {
 }
 
 // should be able to work with most websites that use a login form
-func SimpleLogin(connect Connection, login WebsiteLogin) {
-	// Create a new page
-	page := connect.Browser.MustPage(login.Url)
+func SimpleLogin(connect Connection, login WebsiteLogin) (Connection, error) {
+	//navigate to login page
+	page := connect.Page.MustNavigate(login.Url)
+
 	//Race Condition: It will keep polling until one selector has found a match
 	page.Race().Element("input[name='email']").MustHandle(func(e *rod.Element) {
 		e.MustInput(login.Username).MustType(input.Enter)
@@ -33,6 +34,8 @@ func SimpleLogin(connect Connection, login WebsiteLogin) {
 	}).MustDo()
 
 	page.MustElement("input[name='password']").MustInput(login.Password).MustType(input.Enter)
+
+	return Connection{Browser: connect.Browser, Page: page}, nil
 }
 
 func Connect(browser *rod.Browser, url string) (Connection) {

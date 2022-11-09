@@ -1,7 +1,9 @@
 package main
 
 import (
+
 	"iq-bot/core"
+	"iq-bot/cli"
 	"iq-bot/iq"
 	"os"
 	"reflect"
@@ -13,8 +15,10 @@ func main() {
 	// fmt.Println("Arg length is %d", argLength)
 	u := os.Args[2]
 
+	browser := core.Manual(u)
+
 	//navigate to IQ
-	connect := core.Connect(u, "https://iq.aws.amazon.com/work/#/requests")
+	connect := core.Connect(browser, "https://iq.aws.amazon.com/work/#/requests")
 	cli.Success("connection : ", connect)
 
 	//takes a second, I guess

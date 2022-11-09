@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
 	"github.com/manifoldco/promptui"
 )
 
@@ -109,7 +110,7 @@ func Execute(p iq.IqProvider) {
 func LoginToAws(p iq.IqProvider) (err error) {
 	//load login information into memory
 	p.AwsEnv, err = core.LoadEnv()
-	core.PrintIfErr(err)
+	cli.PrintIfErr(err)
 	cli.Success("environment : ", p.AwsEnv)
 
 	browserino := core.CustomLaunch()

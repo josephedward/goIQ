@@ -2,7 +2,7 @@ package main
 
 import (
 	"iq-bot/core"
-
+	"iq-bot/cli"
 	// "iq-bot/iq"
 	// "fmt"
 	"os"
@@ -15,15 +15,17 @@ func main() {
 
 	//load login information into memory
 	cliEnv, err := core.LoadEnv()
-	core.PrintIfErr(err)
+	cli.PrintIfErr(err)
 	cli.Success("environment : ", cliEnv)
 
+	browser := core.Manual(u)
+
 	//connect to aws
-	connect := core.Connect(u, cliEnv.Url)
-	core.PrintIfErr(err)
+	connect := core.Connect(browser, cliEnv.Url)
+	cli.PrintIfErr(err)
 	cli.Success("connection : ", connect)
 
 	//enter login credentials
-	core.Login(connect, core.WebsiteLogin{cliEnv.Url, cliEnv.Username, cliEnv.Password})
+	core.SimpleLogin(connect, core.WebsiteLogin{cliEnv.Url, cliEnv.Username, cliEnv.Password})
 	//(dont forget to manually enter 2fa)
 }
