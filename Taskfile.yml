@@ -15,7 +15,6 @@ tasks:
     cmds:
       - go clean -modcache
       - go run ./test/test_launcher_lib.go -rod="show,trace" {{.CLI_ARGS}}
-
   scrape:
     cmds:
       - echo "***Scrape***"
