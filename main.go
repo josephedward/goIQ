@@ -1,23 +1,15 @@
 package main
 
 import (
-	// "database/sql"
-	// "fmt"
+	"encoding/csv"
 	"fmt"
+	"github.com/manifoldco/promptui"
 	"iq-bot/cli"
 	"iq-bot/core"
 	"iq-bot/iq"
 	"os"
-
-	// "reflect"
-	// "strconv"
 	"strings"
 	"time"
-
-	// "github.com/go-rod/rod"
-	"github.com/manifoldco/promptui"
-	// "errors"
-	// "reflect"
 )
 
 func main() {
@@ -57,24 +49,13 @@ func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 		cli.PrintIfErr(err)
 		p = NavIq(p)
 
-
 	}
 	cli.Success("p.LoggedIn : ", p.LoggedIn)
 
 	return p, err
 }
 
-// func CreateBrowser() (browser *rod.Browser) {
-// 	browser = rod.New().MustConnect()
-// 	// if path, exists := launcher.LookPath(); exists {
-// 	// 	u := launcher.New().Bin(path).MustLaunch()
-// 	// 	rod.New().ControlURL(u).MustConnect()
-// 	// }
-// 	return browser
-// }
-
 func Authenticate(p iq.IqProvider) (iq.IqProvider, error) {
-
 	//declare error
 	var err error
 
@@ -88,8 +69,8 @@ func Authenticate(p iq.IqProvider) (iq.IqProvider, error) {
 	cli.Success("p.Connection: ", p.Connection)
 	cli.PrintIfErr(err)
 	cli.Success("...waiting on 2FA... (return to browser)")
+
 	//authentication boolean
-	// p.LoggedIn = true
 	p.LoggedIn = true
 	cli.Success("p.LoggedIn : ", p.LoggedIn)
 	return p, err
@@ -103,7 +84,7 @@ func NavIq(iq.IqProvider) (p iq.IqProvider) {
 }
 
 func Execute(p iq.IqProvider) {
-	cli.Success("iq.IqProvider : ", p)
+	// cli.Success("iq.IqProvider : ", p)
 
 	options := []cli.PromptOptions{
 		{
@@ -118,20 +99,31 @@ func Execute(p iq.IqProvider) {
 			Label: "Navigate to IQ",
 			Key:   2,
 		},
-
 		{
 			Label: "Get Requests",
 			Key:   3,
 		},
+		{
+			Label: "Display Requests",
+			Key:   4,
+		},
+		{
+			Label: "Display IQ Provider",
+			Key:   5,
+		},
+		{
+			Label: "Get # of Requests",
+			Key:   6,
+		},
+		{
+			Label: "Write CSV",
+			Key:   7,
+		},
 
 		// {
 		// 	Label: "Send Message",
-		// 	Key:   3,
 		// },
-		// {
-		// 	Label: "Send Bulk Message",
-		// 	Key:   4,
-		// },
+
 	}
 
 	templates := &promptui.SelectTemplates{
@@ -180,6 +172,18 @@ func Execute(p iq.IqProvider) {
 	case 3:
 		cli.Success("Get Requests")
 		p = GetRequests(p)
+	case 4:
+		cli.Success("Display Requests")
+		iq.DisplayRequests(p.Requests)
+	case 5:
+		cli.Success("Display IQ Provider")
+		cli.Success("p : ", p)
+	case 6:
+		cli.Success("Get # of Requests")
+		p.Requests = iq.GetBatchRequests(p.Connection, 5)
+	case 7:
+		cli.Success("Write CSV")
+		WriteCsv(p)
 	}
 
 	Execute(p)
@@ -189,7 +193,6 @@ func GetRequests(p iq.IqProvider) iq.IqProvider {
 
 	//takes a second, I guess
 	time.Sleep(time.Second * 2)
-
 	cli.Success("p : ", p)
 
 	//get all requests
@@ -199,192 +202,26 @@ func GetRequests(p iq.IqProvider) iq.IqProvider {
 	return p
 }
 
-// func GetBrowser() (browser *rod.Browser) {
-// 	browserString := cli.PromptGetInput(cli.PromptContent{
-// 				Label: "Please enter the browser string",
-// 			})
-// 	browser = core.Manual(browserString)
-// 	return browser
-// }
+func WriteCsv(p iq.IqProvider) {
 
-// func Dash(u *rod.Browser){
+	filename := fmt.Sprintf("./request-data_%s.csv", time.Now())
 
-// 		// fmt.Println("Arg length is %d", argLength)
-// 		// u := os.Args[2]
+	f, e := os.Create(filename)
+	if e != nil {
+		fmt.Println(e)
+	}
 
-// 		//navigate to IQ
-// 		browser = core.Manual(u)
-// 		connect := core.Connect(browser, "https://iq.aws.amazon.com/work/#/requests")
-// 		cli.Success("connection : ", connect)
+	writer := csv.NewWriter(f)
+	var data = [][]string{
+		{"title ", "content", "author", "budget", "label", "date"},
+	}
 
-// 		//takes a second, I guess
-// 		time.Sleep(time.Second * 2)
+	for _, v := range p.Requests {
+		data = append(data, []string{v.Title, v.Content, v.Author, v.Budget, v.Label, v.Date})
+	}
 
-// 		reqs := iq.GetRequests(connect)
-
-// 		for _, req := range reqs {
-// 			cli.Success("request : ", req)
-// 			//get value of title and content
-// 			title := reflect.ValueOf(req).FieldByName("title").String()
-// 			content := reflect.ValueOf(req).FieldByName("content").String()
-// 			author := reflect.ValueOf(req).FieldByName("author").String()
-// 			cli.Success("title : ", title)
-// 			cli.Success("author : ", author)
-// 			cli.Success("content : ", content)
-// 		}
-
-// 		cli.Success("# of requests: ", strconv.Itoa(len(reqs)))
-
-// }
-
-// go core.Manager()
-// time.Sleep(1 * time.Second)
-// go core.Remote()
-// func Login(){
-// 	cliEnv, err := core.LoadEnv()
-// 	cli.PrintIfErr(err)
-// 	cli.Success("environment : ", cliEnv)
-
-// 	//connect to aws
-// 	connect := core.Connect(u, cliEnv.Url)
-// 	cli.PrintIfErr(err)
-// 	cli.Success("connection : ", connect)
-
-// 	//enter login credentials
-// 	core.Login(connect, core.WebsiteLogin{cliEnv.Url, cliEnv.Username, cliEnv.Password})
-// }
-
-// func promptGetInput(pc promptContent) string {
-// 	validate := func(input string) error {
-// 		if len(input) <= 0 {
-// 			return errors.New(pc.errorMsg)
-// 		}
-// 		return nil
-// 	}
-// 	prompt := promptui.Prompt{
-// 		Label: pc.Label,
-// 		// Templates: templates,
-// 		Validate: validate,
-// 	}
-// 	result, err := prompt.Run()
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		os.Exit(1)
-// 	}
-// 	fmt.Printf("Input: %s\n", result)
-// 	return result
-// }
-
-// func GetBatchRequestNumber(connect core.Connection) (reqs []iq.IqRequest) {
-// 	numberRequests := promptGetInput(promptContent{
-// 		Label: "Enter the number of requests you want to scrape",
-// 	})
-
-// 	num, _ := strconv.Atoi(numberRequests)
-
-// 	reqs = iq.GetBatchRequests(connect, num)
-// 	cli.Success("reqs : ", reqs)
-// 	return reqs
-// }
-
-// func PrintRequests(reqs []iq.IqRequest) {
-// 	for _, req := range reqs {
-// 		cli.Success("Request:", reflect.ValueOf(req).FieldByName("title").String())
-// 	}
-// }
-
-// func SendMessage(connect core.Connection, templates *promptui.SelectTemplates, searcher func(input string, index int) bool, reqs []iq.IqRequest) {
-
-// 	// options := []iq.IqRequest{reqs...}
-// 	options := []promptOptions{}
-// 	for _, req := range reqs {
-// 		cli.Success("Request:", reflect.ValueOf(req).FieldByName("title").String())
-// 		// options = append(options, promptOptions{
-// 		// 	Label: req.title,
-// 		// 	Key:   int64(req.id),
-// 		// })
-// 	}
-
-// 	prompt := promptui.Select{
-// 		Label:     "Welcome to IQ-Bot. Please choose an option: ",
-// 		Items:     options,
-// 		Templates: templates,
-// 		// Size:      4,
-// 		Searcher: searcher,
-// 	}
-
-// 	i, _, err := prompt.Run()
-
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		main()
-// 		// return ACloudEnv{}, err
-// 	}
-
-// 	fmt.Printf("You choose request %d: %s\n", i+1, options[i].Label)
-
-// 	// iq.InsertMessage(connect, req.element, msg)
-
-// }
-
-/*
-*
-
-  - Execute the program
-    func GetSandboxCreds(cliEnv core.ACloudEnv, p *acloud.ACloudProvider) (acloud.ACloudProvider, error) {
-
-    //connect to website
-    connect, err := core.Login(core.WebsiteLogin{Url: cliEnv.Url, Username: cliEnv.Username, Password: cliEnv.Password})
-    cli.PrintIfErr(err)
-    cli.Success("Connection Successful: ", connect)
-    p.Connection = connect
-
-    //scrape credentials
-    elems, err := acloud.Sandbox(p.Connection, cliEnv.Download_key)
-    cli.PrintIfErr(err)
-    // cli.Success("rod html elements : ", elems)
-
-    //copy credentials to clipboard
-    creds, err := acloud.CopyHtml(elems)
-    cli.PrintIfErr(err)
-    // cli.Success("credentials : ", creds)
-    p.SandboxCredential = creds
-
-    //DISPLAY WITH COLORS PROMINENTLY TO THE USER
-    acloud.DisplayCreds(creds)
-
-    return *p, err
-    }
-*/
-
-// go core.Manager()
-// go core.Remote()
-
-// _, err := exec.Command("/bin/sh", "./scripts/frame.sh").Output()
-// if err != nil {
-// 	panic(err)
-// }
-// cli.Success("Script executed successfully")
-
-// var p iq.IQProvider
-// cli.Success("getting iq provider login...")
-
-// if len(os.Args) > 1 {
-// 	cli.Success("setting args to env...")
-// 	env, err :=core.ArgEnv()
-// 	cli.PrintIfErr(err)
-// 	p.IQEnv = env
-// 	p = bootstrap(p)
-// 	Execute(p)
-// } else {
-// 	env, err := cli.GetEnv(".env")
-// 	cli.PrintIfErr(err)
-// 	if err != nil {
-// 		cli.Error("Error: .env file not found")
-// 		env = core.Env()
-// 	}
-// 	cli.Success("env : ", env)
-// 	p.IQEnv = env
-// 	p = bootstrap(p)
-// 	Execute(p)
-// }
+	e = writer.WriteAll(data)
+	if e != nil {
+		fmt.Println(e)
+	}
+}

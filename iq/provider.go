@@ -2,9 +2,10 @@ package iq
 
 import (
 	"fmt"
-	"github.com/go-rod/rod"
 	"iq-bot/cli"
 	"iq-bot/core"
+
+	"github.com/go-rod/rod"
 	// "strconv"
 )
 
@@ -23,13 +24,13 @@ type IqProvider struct {
 }
 
 type IqRequest struct {
-	element *rod.Element
-	title   string
-	content string
-	author  string
-	budget  string
-	label   string
-	date    string
+	Element *rod.Element
+	Title   string
+	Date    string
+	Author  string
+	Content string
+	Budget  string
+	Label   string
 }
 
 func GetRequests(connect core.Connection) (reqs []IqRequest) {
@@ -43,10 +44,10 @@ func GetRequests(connect core.Connection) (reqs []IqRequest) {
 		author := GetAuthor(connect, elem)
 
 		reqs = append(reqs, IqRequest{
-			element: elem,
-			title:   elem.MustText(),
-			content: content,
-			author:  author,
+			Element: elem,
+			Title:   elem.MustText(),
+			Content: content,
+			Author:  author,
 		})
 	}
 	return reqs
@@ -69,60 +70,55 @@ func GetBatchRequests(connect core.Connection, number int) (reqs []IqRequest) {
 }
 
 func GetElements(connect core.Connection) (reqs []IqRequest) {
-	// cli.Success("connect : ", connect)
+
+	// log the number of elements
+	fmt.Println("Number of elements : ", len(connect.Page.MustWaitLoad().MustElements("div[class^='content ProjectRailItem']")))
+	//log number of titles, dates, labels, budgets
+	fmt.Println("Number of titles : ", len(connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__title']")))
+	fmt.Println("Number of dates : ", len(connect.Page.MustWaitLoad().MustElements("small[class^='ProjectRailItem__date']")))
+	fmt.Println("Number of labels : ", len(connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__label']")))
+	fmt.Println("Number of budgets : ", len(connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__budget']")))
 
 	//get whole element
-	// elems := connect.Page.MustWaitLoad().MustElements("div[class^='content ProjectRailItem']")
-	//log the number of elements
-	// fmt.Println("Number of elements : ", len(elems))
-
-	//log number of titles
-	fmt.Println("Number of titles : ", len(connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__title']")))
-	//log number of dates
-	fmt.Println("Number of dates : ", len(connect.Page.MustWaitLoad().MustElements("small[class^='ProjectRailItem__date']")))
-	//log number of labels
-	// fmt.Println("Number of labels : ", len(connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__label']")))
-	//log number of budgets
-	// fmt.Println("Number of budgets : ", len(connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__budget']")))
-
-	dates := connect.Page.MustWaitLoad().MustElements("small[class^='ProjectRailItem__date']")
+	elems := connect.Page.MustWaitLoad().MustElements("div[class^='content ProjectRailItem']")
 	titles := connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__title']")
-	// labels := connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__label']")
-	// budgets := connect.Page.MustWaitLoad().MustElements("div[class^='ProjectRailItem__budget']")
+	dates := connect.Page.MustWaitLoad().MustElements("small[class^='ProjectRailItem__date']")
 
 	//loop over length of elems
 	for i := 0; i < len(titles); i++ {
-		// var tempElem *rod.Element
+		var tempElem *rod.Element
 
 		//declare temporary vars to hold values
 		var tempTitle string
 		var tempContent string
 		var tempAuthor string
-		// var tempBudget string
-		// var tempLabel string
+		var tempBudget string
+		var tempLabel string
 		var tempDate string
 
-		//check each element for nil
+		tempBudget = "0"
+		tempLabel = "None"
 
-		// if error := elems[i]; error != nil {
-		// 	tempElem = elems[i]
-		// }
+		//look at the element for a budget and label
+		if len(elems[i].MustElements("div[class^='ProjectRailItem__budget']")) > 0 {
+			tempBudget = elems[i].MustElement("div[class^='ProjectRailItem__budget']").MustText()
+		}
+		if len(elems[i].MustElements("div[class^='ProjectRailItem__label']")) > 0 {
+			tempLabel = elems[i].MustElement("div[class^='ProjectRailItem__label']").MustText()
+		}
+
+		//check each element for nil
+		if error := elems[i]; error != nil {
+			tempElem = elems[i]
+		}
 		if error := titles[i]; error != nil {
 			tempTitle = titles[i].MustText()
 		}
-		// if error := labels[i]; error != nil {
-		// 	tempLabel = labels[i].MustText()
-		// }
-		// if error := budgets[i]; error != nil {
-		// 	tempBudget = budgets[i].MustText()
-		// }
 		if error := dates[i]; error != nil {
 			tempDate = dates[i].MustText()
 		}
 
-		//get content and author
-		// tempContent, tempAuthor = GetRequestDetails(connect, tempElem)
-		// use error handling to check for nil
+		//get content and author, use error handling to check for nil
 		if error, _ := GetRequestDetails(connect, titles[i]); error != "" {
 			tempContent, tempAuthor = GetRequestDetails(connect, titles[i])
 		} else {
@@ -130,20 +126,15 @@ func GetElements(connect core.Connection) (reqs []IqRequest) {
 		}
 
 		reqs = append(reqs, IqRequest{
-			title:   tempTitle,
-			date:    tempDate,
-			// label:   tempLabel,
-			// budget:  tempBudget,
-			content: tempContent,
-			author:  tempAuthor,
+			Element: tempElem,
+			Title:   tempTitle,
+			Date:    tempDate,
+			Author:  tempAuthor,
+			Content: tempContent,
+			Budget:  tempBudget,
+			Label:   tempLabel,
 		})
 	}
-
-	//for each elem, get the text of the header, title, label, and budget
-	//create a new IqRequest object with the text of each element
-	//append the new IqRequest object to the array of IqRequest objects
-	//return the array of IqRequest objects
-
 	return reqs
 }
 
@@ -187,6 +178,24 @@ func DraftIntro() {}
 
 func AnswerAllRequests(connect core.Connection, reqs []IqRequest) {
 	for _, req := range reqs {
-		InsertMessage(connect, req.element, "Hello, I am a bot. I am responding to your request.")
+		InsertMessage(connect, req.Element, "Hello, I am a bot. I am responding to your request.")
+	}
+}
+
+func DisplayRequests(reqs []IqRequest) {
+	for _, req := range reqs {
+		fmt.Println("Title : ")
+		cli.Success(req.Title)
+		fmt.Println("Date : ")
+		cli.Success(req.Date)
+		fmt.Println("Label : ")
+		cli.Success(req.Label)
+		fmt.Println("Budget : ")
+		cli.Success(req.Budget)
+		fmt.Println("Content : ")
+		cli.Success(req.Content)
+		fmt.Println("Author : ")
+		cli.Success(req.Author)
+		fmt.Println()
 	}
 }
