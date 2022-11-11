@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"time"
+	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/launcher"
 )
 
 func main() {
@@ -24,62 +26,63 @@ func main() {
 	}
 }
 
+//function for testing current url to see if we are logged in
+func CheckCurrentUrl(p iq.IqProvider) (string){
+	url := p.Connection.Page.MustInfo().URL
+	fmt.Println("url : ", url)
+	return url 
+}
+
+
 func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 	cli.Welcome()
 
-	//load login information into memory
-	p.AwsEnv, err = core.LoadEnv()
-	cli.Success("environment : ", p.AwsEnv)
-	cli.PrintIfErr(err)
+	// //load login information into memory
+	// p.AwsEnv, err = core.LoadEnv()
+	// cli.Success("environment : ", p.AwsEnv)
+	// cli.PrintIfErr(err)
 
 	cli.Success("len(os.Args) : ", len(os.Args))
 	if len(os.Args) > 2 {
-		browser := core.Manual(os.Args[2])
-		p.Connection.Browser = browser
-		cli.Success("p.Connection : ", p.Connection)
-		p.LoggedIn = true
-		p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
+		// browser := core.Manual(os.Args[2])
+		// p.Connection.Browser = browser
+		p, err = ConnectBrowser(p)
+	} else {
 		// p = NavIq(p)
-
-		return p, err
+		p.Connection.Browser = core.BrowserCliOutput()
+		// p, err = ConnectBrowser(p)
 	}
 
-	if !p.LoggedIn {
-		p, err = Authenticate(p)
-		cli.PrintIfErr(err)
-		p = NavIq(p)
+	// if p.Connection.Page == nil {
+	// 	p, err = Authenticate(p)
+	// }
 
-	}
-	cli.Success("p.LoggedIn : ", p.LoggedIn)
-
-	return p, err
-}
-
-func Authenticate(p iq.IqProvider) (iq.IqProvider, error) {
-	//declare error
-	var err error
-
-	cli.Success("p.Connection before: ", p.Connection)
-	p.Connection = core.Connect(p.Connection.Browser, p.AwsEnv.Url)
-	cli.Success("p.Connection after: ", p.Connection)
-
-	//login to aws
-	p.Connection, err = core.SimpleLogin(p.Connection, core.WebsiteLogin{p.AwsEnv.Url, p.AwsEnv.Username, p.AwsEnv.Password})
-	//wait for 2fa - this is a hack for now, need to remove
-	cli.Success("p.Connection: ", p.Connection)
+	p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
+	cli.Success("p : ", p)
 	cli.PrintIfErr(err)
-	cli.Success("...waiting on 2FA... (return to browser)")
-
-	//authentication boolean
-	p.LoggedIn = true
-	cli.Success("p.LoggedIn : ", p.LoggedIn)
 	return p, err
-
 }
+
+
+
+func ConnectBrowser(p iq.IqProvider) (iq.IqProvider, error) {
+	u := launcher.MustResolveURL("")
+	browser := rod.New().ControlURL(u).MustConnect()
+	p.Connection.Browser = browser
+	return p, nil
+}
+
 
 func NavIq(iq.IqProvider) (p iq.IqProvider) {
 	// p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
+	//log current url 
+	CheckCurrentUrl(p)
+	// var err error
+	// p, err = ConnectBrowser(p)
+	// cli.PrintIfErr(err)
+
 	p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
+	p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
 	return p
 }
 
@@ -91,10 +94,10 @@ func Execute(p iq.IqProvider) {
 			Label: "Exit CLI",
 			Key:   0,
 		},
-		{
-			Label: "Reauthenticate",
-			Key:   1,
-		},
+		// {
+		// 	Label: "Authenticate",
+		// 	Key:   1,
+		// },
 		{
 			Label: "Navigate to IQ",
 			Key:   2,
@@ -162,9 +165,9 @@ func Execute(p iq.IqProvider) {
 	switch options[i].Key {
 	case 0:
 		os.Exit(0)
-	case 1:
-		cli.Success("Authenticate")
-		p, _ = Authenticate(p)
+	// case 1:
+	// 	cli.Success("Authenticate")
+		// p, _ = Authenticate(p)
 		// iq.GetRequests(p.Connection)
 	case 2:
 		cli.Success("Navigate to IQ")

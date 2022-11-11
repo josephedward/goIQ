@@ -7,16 +7,22 @@ tasks:
       - go clean -modcache
       # remember to copy this value to pass it to login
       - echo $("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222)  >> test.txt
+
+  auth:
+    cmds:
+      - echo "***Authenticating***"
+      - go run ./test/authenticate.go -rod="show,trace" {{.CLI_ARGS}}
   main:
     cmds:
-      - echo "***Starting Bot***"
+      - echo "***Starting GoIq***"
       - go run . -rod="show,trace" {{.CLI_ARGS}}
   launcher-test:
     cmds:
+      - echo "***Testing Launcher***"
       - go clean -modcache
       - go run ./test/test_launcher_lib.go -rod="show,trace" {{.CLI_ARGS}}
   scrape:
     cmds:
-      - echo "***Scrape***"
+      - echo "***Testing Scrape***"
       - go clean -modcache
       - go run ./test/scrape.go -rod="show,trace" {{.CLI_ARGS}}
