@@ -3,20 +3,34 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"iq-bot/cli"
 	"iq-bot/core"
 	"iq-bot/iq"
+	// "reflect"
+
+	// "log"
 	"os"
 	"strings"
 	"time"
+
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
+	"github.com/manifoldco/promptui"
+	"github.com/rs/zerolog"
+	// "github.com/rs/zerolog/log"
 )
 
 func main() {
+
+
+	//if os.Args contains "debug" then set log level to debug
+	if os.Args[2] == "debug" {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+	// print level of global logger
+	fmt.Println("global logger level : ", zerolog.GlobalLevel())
+
 	var p iq.IqProvider
-	cli.Success("p.LoggedIn : ", p.LoggedIn)
 	p, err := Bootstrap(p)
 	cli.Success("IqProvider after Bootstrap: ", p)
 	cli.PrintIfErr(err)
@@ -26,37 +40,15 @@ func main() {
 	}
 }
 
-//function for testing current url to see if we are logged in
-func CheckCurrentUrl(p iq.IqProvider) (string){
-	url := p.Connection.Page.MustInfo().URL
-	fmt.Println("url : ", url)
-	return url 
-}
+
 
 
 func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 	cli.Welcome()
-
-	// //load login information into memory
-	// p.AwsEnv, err = core.LoadEnv()
-	// cli.Success("environment : ", p.AwsEnv)
-	// cli.PrintIfErr(err)
-
 	cli.Success("len(os.Args) : ", len(os.Args))
-	if len(os.Args) > 2 {
-		// browser := core.Manual(os.Args[2])
-		// p.Connection.Browser = browser
-		p, err = ConnectBrowser(p)
-	} else {
-		// p = NavIq(p)
-		p.Connection.Browser = core.BrowserCliOutput()
-		// p, err = ConnectBrowser(p)
-	}
+	cli.Success("os.Args : ", os.Args)
 
-	// if p.Connection.Page == nil {
-	// 	p, err = Authenticate(p)
-	// }
-
+	p, err = ConnectBrowser(p)
 	p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
 	cli.Success("p : ", p)
 	cli.PrintIfErr(err)
@@ -64,11 +56,19 @@ func Bootstrap(iq.IqProvider) (p iq.IqProvider, err error) {
 }
 
 
+//function for testing current url to see if we are logged in
+func CheckCurrentUrl(p iq.IqProvider) (string){
+	url := p.Connection.Page.MustInfo().URL
+	fmt.Println("url : ", url)
+	return url 
+}
 
 func ConnectBrowser(p iq.IqProvider) (iq.IqProvider, error) {
 	u := launcher.MustResolveURL("")
 	browser := rod.New().ControlURL(u).MustConnect()
-	p.Connection.Browser = browser
+	Connection := core.Connect(browser, p.AwsEnv.Url)
+	cli.Success("Connection after: ", Connection)
+	p.Connection = Connection
 	return p, nil
 }
 

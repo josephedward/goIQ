@@ -17,7 +17,7 @@ import (
 // }
 
 type IqProvider struct {
-	LoggedIn bool
+	// LoggedIn bool
 	core.AwsEnv
 	core.Connection
 	Requests []IqRequest

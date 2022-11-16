@@ -1,22 +1,20 @@
 version: "3"
 
 tasks:
-  launch:
+  devtools:
     cmds:
       - echo "***Starting Browser***"
       - go clean -modcache
-      # remember to copy this value to pass it to login
-      - echo $("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222)  >> test.txt
-
+      - $("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222)
   auth:
     cmds:
       - echo "***Authenticating***"
       - go run ./test/authenticate.go -rod="show,trace" {{.CLI_ARGS}}
-  main:
+  cli:
     cmds:
       - echo "***Starting GoIq***"
       - go run . -rod="show,trace" {{.CLI_ARGS}}
-  launcher-test:
+  launcher:
     cmds:
       - echo "***Testing Launcher***"
       - go clean -modcache
