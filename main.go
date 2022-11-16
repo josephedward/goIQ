@@ -22,11 +22,13 @@ import (
 
 func main() {
 
-
-	//if os.Args contains "debug" then set log level to debug
-	if os.Args[2] == "debug" {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	//look through all os.Args and see if one is "debug"
+	for _, arg := range os.Args {
+		if arg == "debug" {
+			zerolog.SetGlobalLevel(zerolog.DebugLevel)
+		}
 	}
+
 	// print level of global logger
 	fmt.Println("global logger level : ", zerolog.GlobalLevel())
 
