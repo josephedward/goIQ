@@ -7,8 +7,14 @@ This project helps automate the process of interacting with AWS IQ requests.
 ```bash
 task devtools
 task auth
-task cli -- <DEVTOOLS-STRING-FROM-STEP-1>
+task cli 
 ```
+
+**Cli with logging enabled :** 
+```
+task cli -- debug
+```
+
 
 This project uses a [taskfile](https://taskfile.dev/) to run tasks:
 

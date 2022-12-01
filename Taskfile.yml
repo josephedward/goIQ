@@ -3,12 +3,12 @@ version: "3"
 tasks:
   devtools:
     cmds:
-      - echo "***Starting Browser***"
+      - echo "***Starting Devtools Session***"
       - go clean -modcache
       - $("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222)
   auth:
     cmds:
-      - echo "***Authenticating***"
+      - echo "***Authenticating with AWS***"
       - go run ./test/authenticate.go -rod="show,trace" {{.CLI_ARGS}}
   cli:
     cmds:
@@ -24,3 +24,11 @@ tasks:
       - echo "***Testing Scrape***"
       - go clean -modcache
       - go run ./test/scrape.go -rod="show,trace" {{.CLI_ARGS}}
+  debug:
+    cmds:
+      - echo "***Starting GoIq***"
+      - go run . -rod="show,trace" {{.CLI_ARGS}} debug
+  loop:
+    cmds:
+      - echo "***Starting GoIq***"
+      - go run . -rod="show,trace" {{.CLI_ARGS}} loop

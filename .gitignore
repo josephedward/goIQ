@@ -9,3 +9,5 @@ creds.txt
 .DS_Store
 dist/
 .*
+
+*.csv

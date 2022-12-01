@@ -26,6 +26,11 @@ func main() {
 	for _, arg := range os.Args {
 		if arg == "debug" {
 			zerolog.SetGlobalLevel(zerolog.DebugLevel)
+			break
+		}
+		if arg == "loop"	{
+			//loop through all requests\
+			
 		}
 	}
 
@@ -76,13 +81,8 @@ func ConnectBrowser(p iq.IqProvider) (iq.IqProvider, error) {
 
 
 func NavIq(iq.IqProvider) (p iq.IqProvider) {
-	// p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
 	//log current url 
 	CheckCurrentUrl(p)
-	// var err error
-	// p, err = ConnectBrowser(p)
-	// cli.PrintIfErr(err)
-
 	p.Connection.Page = p.Connection.Browser.MustPage("https://iq.aws.amazon.com/work/#/requests")
 	p.Connection.Page.MustNavigate("https://iq.aws.amazon.com/work/#/requests")
 	return p
