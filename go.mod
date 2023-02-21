@@ -3,7 +3,7 @@ module iq-bot
 go 1.19
 
 require (
-	github.com/go-rod/rod v0.112.3
+	github.com/go-rod/rod v0.112.6
 	github.com/joho/godotenv v1.4.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/rs/zerolog v1.28.0
