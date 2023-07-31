@@ -6,7 +6,7 @@ require (
 	github.com/go-rod/rod v0.112.3
 	github.com/joho/godotenv v1.5.1
 	github.com/manifoldco/promptui v0.9.0
-	github.com/rs/zerolog v1.29.1
+	github.com/rs/zerolog v1.30.0
 	github.com/ysmood/leakless v0.8.0
 )
 
